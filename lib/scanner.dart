@@ -2,13 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-import 'fillcylinders.dart';
-
 class Scanner extends StatefulWidget {
-  List qrList;
-  String accessToken;
-  Scanner({Key? mykey, required this.qrList, required this.accessToken})
-      : super(key: mykey);
+  const Scanner({super.key});
 
   @override
   State<Scanner> createState() => _ScannerState();
@@ -52,14 +47,7 @@ class _ScannerState extends State<Scanner> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  try {
-                    setState(() {
-                      if (!widget.qrList.contains('${barcode!.code}') &&
-                          {barcode!.code} != null) {
-                        widget.qrList.add('${barcode!.code}');
-                      }
-                    });
-                  } catch (e) {}
+                  Navigator.of(context).pop();
                 },
                 child: const Text('add'))
           ],
@@ -89,60 +77,47 @@ class _ScannerState extends State<Scanner> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: const Text('Scan Cylinders',
-              style: TextStyle(color: Colors.black)),
+        appBar: AppBar(backgroundColor: Colors.white,
+          title: const Text('Scan Cylinders',style: TextStyle(color: Colors.black)),
           automaticallyImplyLeading: false,
           leading: IconButton(
             onPressed: () {
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => FillCylinders(
-                            qrList: widget.qrList,
-                            accessToken: widget.accessToken,
-                          )));
+              Navigator.of(context).pop();
             },
             icon: const Icon(Icons.arrow_back_rounded),
             color: Colors.black,
           ),
-          actions: [
-            IconButton(
-              color: const Color.fromARGB(255, 236, 215, 19),
+          actions:[IconButton(color: const Color.fromARGB(255, 236, 215, 19),
               icon: FutureBuilder<bool?>(
-                  future: controller?.getFlashStatus(),
-                  builder: (context, snapshot) {
-                    if (snapshot.data != null) {
-                      return Icon(snapshot.data!
-                          ? Icons.flash_on_rounded
-                          : Icons.flash_off_rounded);
-                    } else {
-                      return Container();
-                    }
-                  }),
-              onPressed: () async {
-                await controller?.toggleFlash();
-                setState(() {});
-              },
-            ),
-            IconButton(
-              color: Colors.black,
-              icon: FutureBuilder(
-                  future: controller?.getCameraInfo(),
-                  builder: (context, snapshot) {
-                    if (snapshot.data != null) {
-                      return const Icon(Icons.switch_camera_rounded);
-                    } else {
-                      return Container();
-                    }
-                  }),
+      future: controller?.getFlashStatus(),
+      builder: (context, snapshot) {if (snapshot.data!=null)
+      {return Icon(snapshot.data!? Icons.flash_on_rounded:Icons.flash_off_rounded);}
+      else{return Container();}}
+     ),
+     onPressed: () async {
+      await controller?.toggleFlash();
+      setState(() {});
+    },
+  ),
+IconButton(
+  color: Colors.black,
+              icon:FutureBuilder(
+      future: controller?.getCameraInfo(),
+      builder: (context, snapshot) {
+        if (snapshot.data!=null){
+          return const Icon(Icons.switch_camera_rounded);
+          }
+      else{
+        return Container();}}
+     
+    ) ,
               onPressed: () async {
                 await controller?.flipCamera();
                 setState(() {});
               },
+              
             )
-          ],
+] ,
         ),
         body: Container(
           width: double.infinity,
