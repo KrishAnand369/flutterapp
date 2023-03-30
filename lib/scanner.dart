@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:oru_app/functions.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-
+import 'package:fluttertoast/fluttertoast.dart';
 import 'fillcylinders.dart';
+import 'package:flutter_beep/flutter_beep.dart';
 
 class Scanner extends StatefulWidget {
   List qrList;
@@ -54,9 +56,14 @@ class _ScannerState extends State<Scanner> {
                 onPressed: () {
                   try {
                     setState(() {
-                      if (!widget.qrList.contains('${barcode!.code}') &&
+                      if (widget.qrList
+                          .contains('${barcode!.code}'.substring(4))) {
+                        toast('${barcode!.code}' + " is already added");
+                      } else if (!widget.qrList
+                              .contains('${barcode!.code}'.substring(4)) &&
                           {barcode!.code} != null) {
-                        widget.qrList.add('${barcode!.code}');
+                        widget.qrList.add('${barcode!.code}'.substring(4));
+                        toast("added " + '${barcode!.code}');
                       }
                     });
                   } catch (e) {}
@@ -76,13 +83,36 @@ class _ScannerState extends State<Scanner> {
         ),
       );
 
-  void onQRViewCreated(QRViewController controller) {
+  /*void onQRViewCreated(QRViewController controller) {
     setState(() {
       this.controller = controller;
     });
 
     controller.scannedDataStream
         .listen((barcode) => setState(() => this.barcode = barcode));
+  }*/
+  Barcode? lastScanned;
+
+  void onQRViewCreated(QRViewController controller) {
+    setState(() {
+      this.controller = controller;
+    });
+
+    controller.scannedDataStream.listen((barcode) {
+      if (lastScanned?.code != barcode.code) {
+        lastScanned = barcode;
+        setState(() => this.barcode = barcode);
+        FlutterBeep.playSysSound(41);
+        Fluttertoast.showToast(
+            msg: "Scanned: ${barcode.code}",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.black,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
+    });
   }
 
   @override
@@ -166,11 +196,26 @@ class _ScannerState extends State<Scanner> {
                   body: Stack(
                     alignment: Alignment.center,
                     children: <Widget>[
-                      Positioned(bottom: 10, child: buidResult()),
-                      Positioned(bottom: 50, child: addButton())
+                      Positioned(bottom: 90, child: buidResult()),
+                      Positioned(bottom: 10, child: addButton()),
                     ],
                   ),
                 ),
+              ),
+              Divider(),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => FillCylinders(
+                                  qrList: widget.qrList,
+                                  accessToken: widget.accessToken,
+                                )));
+                  },
+                  child: Text("Submit")),
+              SizedBox(
+                height: 10,
               )
             ],
           ),

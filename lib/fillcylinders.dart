@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:oru_app/fillcylinder_mannually.dart';
+import 'package:oru_app/functions.dart';
 import 'package:oru_app/scanner.dart';
+import 'package:http/http.dart' as http;
 
 class FillCylinders extends StatefulWidget {
   List qrList;
+
   String accessToken;
 
   FillCylinders({Key? mykey, required this.qrList, required this.accessToken})
@@ -14,6 +19,10 @@ class FillCylinders extends StatefulWidget {
 }
 
 class _FillCylindersState extends State<FillCylinders> {
+  List cylinderId = [];
+  bool flag = false;
+  bool cancel = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,11 +78,11 @@ class _FillCylindersState extends State<FillCylinders> {
                 return Column(
                   children: [
                     Card(
-                      elevation: 4,
+                      elevation: 2,
                       child: ListTile(
                         title: Text(widget.qrList[index]),
                         subtitle: Text((index + 1).toString()),
-                        tileColor: Colors.grey[350],
+                        tileColor: Colors.white70,
                         trailing: GestureDetector(
                           onTap: () {
                             setState(() {
@@ -96,9 +105,19 @@ class _FillCylindersState extends State<FillCylinders> {
               }),
           ElevatedButton(
             onPressed: () {
-              setState(() {
-                widget.qrList.clear();
-              });
+              update();
+              if (flag) {
+                toast("some QR codes are not valid");
+              }
+              makePostRequestToFill(widget.accessToken, cylinderId, 40);
+
+              flag = false;
+              cylinderId.clear();
+              if (widget.qrList.isEmpty) {
+                setState(() {
+                  cancel = false;
+                });
+              }
             },
             child: const Text(
               "Submit",
@@ -109,8 +128,26 @@ class _FillCylindersState extends State<FillCylinders> {
             height: 20,
           ),
 
+          cancel
+              ? ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      cylinderId.clear();
+                      cancel = false;
+                    });
+                  },
+                  child: Text("Cancel"),
+                  style: ButtonStyle(),
+                )
+              : Text(""),
+          Divider(thickness: 1),
+
+          SizedBox(
+            height: 10,
+          ),
+
           Card(
-            elevation: 4,
+            elevation: 2,
             child: ListTile(
               title: Text("Manual Entries"),
               leading: Icon(
@@ -122,15 +159,73 @@ class _FillCylindersState extends State<FillCylinders> {
                   MaterialPageRoute(
                       builder: (context) => FillMannually(
                             accessToken: widget.accessToken,
-                            qrList: widget.qrList,
                           )),
                 );
               },
-              tileColor: Colors.grey[300],
+              tileColor: Colors.white,
             ),
           )
         ],
       ),
     );
+  }
+
+  void update() {
+    for (int i = 0; i < widget.qrList.length; i++) {
+      fetchCylinderByQr(widget.qrList[i]);
+    }
+    setState(() {
+      cancel = true;
+    });
+  }
+
+  Future fetchCylinderByQr(String qrId) async {
+    String url = 'http://soc-erp.showcase.code7.in/api/cylinder/qr';
+    url += '?qr_id=$qrId';
+    final token = widget.accessToken;
+    http.Response response = await http.get(Uri.parse(url), headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    });
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      setState(() {
+        cylinderId.add(data["cylinder"]["id"]);
+        widget.qrList.remove(qrId);
+      });
+      print(cylinderId);
+    } else {
+      flag = true;
+    }
+  }
+
+  void makePostRequestToFill(
+      String accessToken, List cylinderId, int purity) async {
+    if (!cylinderId.isEmpty) {
+      var url = Uri.parse('http://soc-erp.showcase.code7.in/api/fill');
+
+      var requestBody = jsonEncode({
+        "purity": purity,
+        "cylinders": cylinderId,
+        "manual-cylinders": [],
+        "remarks": "string"
+      });
+
+      var response = await http.post(url, body: requestBody, headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json'
+      });
+
+      print('Response status: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        toast("Error");
+      } else {
+        toast("submitted");
+        setState(() {
+          cancel = false;
+        });
+      }
+    }
   }
 }

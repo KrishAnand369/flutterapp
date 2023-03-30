@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+
 import 'package:http/http.dart' as http;
+import 'package:oru_app/functions.dart';
 import 'package:oru_app/homepage.dart';
 import 'package:oru_app/reusables.dart';
 
@@ -60,23 +62,30 @@ class _LoginPageState extends State<LoginPage> {
       'password': password.text.toString()
     };
     final jsonBody = json.encode(body);
+    try {
+      final response = await http.post(url, headers: headers, body: jsonBody);
 
-    final response = await http.post(url, headers: headers, body: jsonBody);
+      if (response.statusCode == 200) {
+        toast("Logined Successfully");
 
-    if (response.statusCode == 200) {
-      // request successful, handle response data
-      final responseData = json.decode(response.body);
-      print(responseData['message']);
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => HomePage(
-                    access_token: responseData["token"],
-                  )));
-      // ...
-    } else {
-      // request failed, handle error
-      print('Request failed with status: ${response.statusCode}.');
+        // request successful, handle response data
+        final responseData = json.decode(response.body);
+        print(responseData['message']);
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomePage(
+                      access_token: responseData["token"],
+                    )));
+        // ...
+      } else if (response.statusCode == 400) {
+        toast("Username and Password doesn't match");
+        print('Request failed with status: ${response.statusCode}.');
+      } else {
+        toast("Enter valid email id");
+      }
+    } catch (e) {
+      toast("Check internet connectivity");
     }
   }
 }

@@ -21,10 +21,10 @@ TextField reusableTextField(String text, IconData icon, bool isPassword,
       ),
       filled: true,
       floatingLabelBehavior: FloatingLabelBehavior.never,
-      fillColor: Colors.grey.withOpacity(0.3),
+      fillColor: Colors.white.withOpacity(0.3),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(30),
-        borderSide: const BorderSide(width: 0, style: BorderStyle.none),
+        borderSide: const BorderSide(width: 1, style: BorderStyle.none),
       ),
     ),
     keyboardType:
