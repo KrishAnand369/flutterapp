@@ -184,20 +184,13 @@ class _FillMannuallyState extends State<FillMannually> {
                 cylinderNumbersTyped.clear();
                 cylinderTypesTyped.clear();
               });
+              if (cancel) {
+                _showConfirmationDialog();
+              }
             }),
             SizedBox(
               height: 15,
             ),
-            cancel
-                ? buttons(context, "cancel", () {
-                    setState(() {
-                      cylinderID.clear();
-                      cylinderNumbersTyped.clear();
-                      cylinderTypesTyped.clear();
-                      cancel = false;
-                    });
-                  })
-                : Divider(),
             buttons(context, "Done", () {
               Navigator.pushReplacement(
                   context,
@@ -270,6 +263,9 @@ class _FillMannuallyState extends State<FillMannually> {
       // print(cylinderID);
       // Process data
     } else {
+      setState(() {
+        cancel = false;
+      });
       toast("Cylinder number and type does not match");
     }
   }
@@ -299,5 +295,65 @@ class _FillMannuallyState extends State<FillMannually> {
         setState(() {});
       }
     }
+  }
+
+  Future<void> _showConfirmationDialog() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Are you sure you want to submit?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                setState(() {
+                  cylinderID.clear();
+                  cylinderNumbersTyped.clear();
+                  cylinderTypesTyped.clear();
+                  cancel = false;
+                });
+                Navigator.pop(context, false);
+              },
+            ),
+            TextButton(
+              child: Text('Proceed'),
+              onPressed: () {
+                // TODO: handle form submission
+
+                for (int i = 0; i < cylinderNumbersTyped.length; i++) {
+                  fetchCylinderIdMannually(
+                      widget.accessToken,
+                      cylinderNumbersTyped[i],
+                      cylinderTypeId[
+                          cylinderTypes.indexOf(cylinderTypesTyped[i])]);
+                }
+                makePostRequestToFill(widget.accessToken, cylinderID, 40);
+
+                setState(() {
+                  if (cylinderNumbersTyped.isNotEmpty) {
+                    cancel = true;
+                  } else {
+                    cancel = false;
+                  }
+                  cylinderID.clear();
+                  cylinderNumbersTyped.clear();
+                  cylinderTypesTyped.clear();
+                });
+                if (cancel) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('submitted successfully'),
+                    ),
+                  );
+                }
+                Navigator.pop(context, false);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
