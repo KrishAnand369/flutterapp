@@ -109,8 +109,6 @@ class _FillCylindersState extends State<FillCylinders> {
               if (flag) {
                 toast("some QR codes are not valid");
               }
-              makePostRequestToFill(widget.accessToken, cylinderId, 40);
-
               flag = false;
               cylinderId.clear();
               if (widget.qrList.isEmpty) {
@@ -118,6 +116,7 @@ class _FillCylindersState extends State<FillCylinders> {
                   cancel = false;
                 });
               }
+              _showConfirmationDialog();
             },
             child: const Text(
               "Submit",
@@ -127,19 +126,6 @@ class _FillCylindersState extends State<FillCylinders> {
           const SizedBox(
             height: 20,
           ),
-
-          cancel
-              ? ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      cylinderId.clear();
-                      cancel = false;
-                    });
-                  },
-                  child: Text("Cancel"),
-                  style: ButtonStyle(),
-                )
-              : Text(""),
           Divider(thickness: 1),
 
           SizedBox(
@@ -227,5 +213,64 @@ class _FillCylindersState extends State<FillCylinders> {
         });
       }
     }
+  }
+
+  Future<void> _showConfirmationDialog() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Are you sure you want to submit?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                if (cancel) {
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        cylinderId.clear();
+                        cancel = false;
+                      });
+                    },
+                    child: Text("Cancel"),
+                    style: ButtonStyle(),
+                  );
+                } else
+                  Text("");
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: const Text('Proceed'),
+              onPressed: () {
+                // TODO: handle form submission
+                update();
+                if (flag) {
+                  toast("some QR codes are not valid");
+                }
+                makePostRequestToFill(widget.accessToken, cylinderId, 40);
+
+                flag = false;
+                cylinderId.clear();
+                if (widget.qrList.isEmpty) {
+                  setState(() {
+                    cancel = false;
+                  });
+                }
+
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('submitted successfully'),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

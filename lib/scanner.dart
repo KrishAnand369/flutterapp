@@ -82,15 +82,6 @@ class _ScannerState extends State<Scanner> {
           borderColor: Colors.blue,
         ),
       );
-
-  /*void onQRViewCreated(QRViewController controller) {
-    setState(() {
-      this.controller = controller;
-    });
-
-    controller.scannedDataStream
-        .listen((barcode) => setState(() => this.barcode = barcode));
-  }*/
   Barcode? lastScanned;
 
   void onQRViewCreated(QRViewController controller) {
@@ -115,6 +106,46 @@ class _ScannerState extends State<Scanner> {
     });
   }
 
+Future<void> _showConfirmationDialog() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Are you sure you want to submit?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Proceed'),
+              onPressed: () {
+                // TODO: handle form submission
+                
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => FillCylinders(
+                                  qrList: widget.qrList,
+                                  accessToken: widget.accessToken,
+                                )));
+                  
+                //Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('submitted successfully'),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -204,14 +235,9 @@ class _ScannerState extends State<Scanner> {
               ),
               Divider(),
               ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => FillCylinders(
-                                  qrList: widget.qrList,
-                                  accessToken: widget.accessToken,
-                                )));
+                  onPressed: () 
+                  {
+                      _showConfirmationDialog();
                   },
                   child: Text("Submit")),
               SizedBox(
