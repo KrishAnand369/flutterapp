@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import "package:oru_app/fillcylinders.dart";
 import 'package:oru_app/reusables.dart';
+import 'package:oru_app/delivercylinders/delivercylinders.dart';
+import 'package:oru_app/collectcylinders/collectcylinders.dart';
 
 class HomePage extends StatefulWidget {
   String access_token;
@@ -83,7 +85,12 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             height: 25,
           ),
-          Kbutton("Deliver Cylinders ", () => () {}),
+          Kbutton("Deliver Cylinders ", () {deliver_cylinder();}),
+
+          SizedBox(
+            height: 25,
+          ),
+          Kbutton("Collect Cylinders", (){collect_cylinder();}),
 
           SizedBox(
             height: 25,
@@ -108,4 +115,23 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+  
+Future<void> deliver_cylinder() async {
+  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>DeliverCylinders (
+                              qrList: [],
+                              accessToken: widget.access_token,
+                            )));
+}
+Future<void> collect_cylinder() async {
+  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>CollectCylinders (
+                              qrList: [],
+                              accessToken: widget.access_token,
+                            )));
+}
 }

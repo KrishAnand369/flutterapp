@@ -3,20 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:oru_app/functions.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'fillcylinders.dart';
+import 'package:oru_app/collectcylinders/collectcylinders.dart';
 import 'package:flutter_beep/flutter_beep.dart';
 
-class Scanner extends StatefulWidget {
+class Collect_Scanner extends StatefulWidget {
   List qrList;
   String accessToken;
-  Scanner({Key? mykey, required this.qrList, required this.accessToken})
+  Collect_Scanner({Key? mykey, required this.qrList, required this.accessToken})
       : super(key: mykey);
 
   @override
-  State<Scanner> createState() => _ScannerState();
+  State<Collect_Scanner> createState() => _Collect_ScannerState();
 }
 
-class _ScannerState extends State<Scanner> {
+class _Collect_ScannerState extends State<Collect_Scanner> {
   final qrKey = GlobalKey(debugLabel: 'QR');
   Barcode? barcode;
 
@@ -106,7 +106,7 @@ class _ScannerState extends State<Scanner> {
     });
   }
 
-Future<void> _showConfirmationDialog() async {
+  Future<void> _showConfirmationDialog() async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -124,15 +124,15 @@ Future<void> _showConfirmationDialog() async {
               child: Text('Proceed'),
               onPressed: () {
                 // TODO: handle form submission
-                
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => FillCylinders(
-                                  qrList: widget.qrList,
-                                  accessToken: widget.accessToken,
-                                )));
-                  
+                dispose();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CollectCylinders(
+                              qrList: widget.qrList,
+                              accessToken: widget.accessToken,
+                            )));
+
                 //Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -146,6 +146,7 @@ Future<void> _showConfirmationDialog() async {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -160,7 +161,7 @@ Future<void> _showConfirmationDialog() async {
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => FillCylinders(
+                      builder: (context) => CollectCylinders(
                             qrList: widget.qrList,
                             accessToken: widget.accessToken,
                           )));
@@ -235,9 +236,8 @@ Future<void> _showConfirmationDialog() async {
               ),
               Divider(),
               ElevatedButton(
-                  onPressed: () 
-                  {
-                      _showConfirmationDialog();
+                  onPressed: () {
+                    _showConfirmationDialog();
                   },
                   child: Text("Submit")),
               SizedBox(

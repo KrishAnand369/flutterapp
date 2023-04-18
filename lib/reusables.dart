@@ -105,7 +105,8 @@ Container buttons(BuildContext context, String text, Function onTap) {
   );
 }
 
-Container Kbutton(String text, Function onTap()) {
+
+Container Kbutton(String text, Function onTap ) {
   return Container(
     color: Colors.white,
     width: double.infinity,

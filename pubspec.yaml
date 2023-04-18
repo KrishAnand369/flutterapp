@@ -42,6 +42,7 @@ dependencies:
   fluttertoast: ^8.2.1
   flutter_beep: ^1.0.0
   flutter_typeahead: ^4.3.7
+  collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
